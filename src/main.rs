@@ -1,12 +1,12 @@
 use chrono::Local;
-use edsa_pos::{sale::{people::{Employee, Sex, Person, Role}, inventory::{FinishedProduct, Product, RawMaterial, DailyYield}, accounts::{TransactionIn, OutTransaction}, errors::PosError}, fetch_finished_product_log};
+use edsa_pos::{sale::{people::{Employee, Sex, Person, Role}, inventory::{FinishedProduct, Product, RawMaterial, DailyYield}, accounts::{TransactionIn, OutTransaction}, errors::PosError}, fetch_finished_product_log, fetch_ext_debt_holders, fetch_transaction_in_log};
 
 
 fn main()->Result <(), PosError>{
     // // create supplier,customer,employer
     // let _e = Employee::new("Slav".to_string(), Sex::Male, true, "0101019181".to_string());
     // let s = Person::new(Role::Supplier, "SAiyona".to_string(), "038271928".to_string());
-    // let c = Person::new(Role::Customer, "Asap".to_string(), "3823344242".to_string());
+    // let c = Person::new(Role::Customer, "Rayon".to_string(), "3823344242".to_string());
 
     // // // create a "finishedproduct" struct
     // let mut fc = FinishedProduct::new("Flour".to_string(), 87);
@@ -45,6 +45,11 @@ fn main()->Result <(), PosError>{
     // let s = now.format("%d-%m-%Y %H:%M:%S").to_string();
     // println!("{:?}",&s);
 
+    let mut dl = fetch_ext_debt_holders()?;
+    let mut tl = fetch_transaction_in_log()?;
+    
+    dl[0].settle_debt(300, &mut tl);
+    dbg!(&tl);
 
     Ok(())
 }

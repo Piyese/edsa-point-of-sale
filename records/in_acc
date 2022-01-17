@@ -116,3 +116,133 @@
   total_cost: 4410
   bill_settled: false
   balance: 3850
+- time: "17-01-2022 16:21:47"
+  buyer:
+    role: Customer
+    name: Aslay
+    tel: "3823344242"
+  items:
+    - name: Flour
+      package_specifier: ~
+      price: 60
+      quantity: 5
+  total_cost: 300
+  bill_settled: false
+  balance: 100
+- time: "17-01-2022 16:24:47"
+  buyer:
+    role: Customer
+    name: Aslay
+    tel: "3823344242"
+  items:
+    - name: Flour
+      package_specifier: ~
+      price: 60
+      quantity: 5
+  total_cost: 300
+  bill_settled: false
+  balance: 100
+- time: "17-01-2022 16:26:29"
+  buyer:
+    role: Customer
+    name: Aslay
+    tel: "3823344242"
+  items:
+    - name: Flour
+      package_specifier: ~
+      price: 60
+      quantity: 5
+  total_cost: 300
+  bill_settled: false
+  balance: 100
+- time: "17-01-2022 16:30:49"
+  buyer:
+    role: Customer
+    name: Rayon
+    tel: "3823344242"
+  items:
+    - name: Flour
+      package_specifier: ~
+      price: 60
+      quantity: 5
+  total_cost: 300
+  bill_settled: false
+  balance: 100
+- time: "17-01-2022 16:31:00"
+  buyer:
+    role: Customer
+    name: Rayon
+    tel: "3823344242"
+  items:
+    - name: Flour
+      package_specifier: ~
+      price: 60
+      quantity: 5
+  total_cost: 300
+  bill_settled: false
+  balance: 100
+- time: "17-01-2022 16:31:08"
+  buyer:
+    role: Customer
+    name: Rayon
+    tel: "3823344242"
+  items:
+    - name: Flour
+      package_specifier: ~
+      price: 60
+      quantity: 5
+  total_cost: 300
+  bill_settled: false
+  balance: 100
+- time: "17-01-2022 16:35:53"
+  buyer:
+    role: Customer
+    name: Rayon
+    tel: "3823344242"
+  items:
+    - name: Flour
+      package_specifier: ~
+      price: 60
+      quantity: 5
+  total_cost: 300
+  bill_settled: false
+  balance: 100
+- time: "17-01-2022 16:35:57"
+  buyer:
+    role: Customer
+    name: Rayon
+    tel: "3823344242"
+  items:
+    - name: Flour
+      package_specifier: ~
+      price: 60
+      quantity: 5
+  total_cost: 300
+  bill_settled: false
+  balance: 100
+- time: "17-01-2022 16:45:25"
+  buyer:
+    role: Customer
+    name: Asap
+    tel: "3823344242"
+  items:
+    - name: Flour
+      package_specifier: ~
+      price: 60
+      quantity: 5
+  total_cost: 300
+  bill_settled: false
+  balance: 100
+- time: "17-01-2022 16:45:59"
+  buyer:
+    role: Customer
+    name: Rayon
+    tel: "3823344242"
+  items:
+    - name: Flour
+      package_specifier: ~
+      price: 60
+      quantity: 5
+  total_cost: 300
+  bill_settled: false
+  balance: 100

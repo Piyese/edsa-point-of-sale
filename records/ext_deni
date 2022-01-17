@@ -1,0 +1,16 @@
+---
+- person:
+    role: Customer
+    name: Rayon
+    tel: "3823344242"
+  total_amount: 600
+- person:
+    role: Customer
+    name: Ahha
+    tel: "3823344242"
+  total_amount: 500
+- person:
+    role: Customer
+    name: Asap
+    tel: "3823344242"
+  total_amount: 100

@@ -2,7 +2,7 @@ pub mod sale;
 
 use std::path::Path;
 
-use sale::{accounts::{TransactionIn, OutTransaction, DebtExt}, errors::PosError, inventory::{DailyYield,FinishedProduct, RawMaterial}, people::{Person,Employee}};
+use sale::{accounts::{TransactionIn, OutTransaction, DebtExt, DebtInt}, errors::PosError, inventory::{DailyYield,FinishedProduct, RawMaterial}, people::{Person,Employee}};
 
 
 pub fn fetch_transaction_in_log()->Result<Vec<TransactionIn>, PosError>{
@@ -95,23 +95,6 @@ pub fn fetch_raw_material_log()->Result<RawMaterial, PosError> {
     }
 }
 
-// pub fn all_debt_holders() -> Result<Vec<Person>, PosError> {
-//     let dlist = fetch_transaction_in_log()?;
-
-//     if dlist.is_empty() {
-//         println!("no transactions");
-//         let names: Vec<Person> = Vec::new();
-//         Ok(names)
-//     }else {
-//         let p: Vec<_> = dlist.into_iter().filter(|t| t.bill_settled == false ).collect();
-//         let mut names: Vec<Person> = Vec::new();
-//         while let Some(tr) = p.to_owned().into_iter().next() {
-//             if !names.contains(&tr.buyer) { names.push(tr.buyer) }
-//         }
-//         Ok(names)
-//     }
-// }
-
 pub fn fetch_ext_debt_holders()->Result<Vec<DebtExt>, PosError> {
     let path = Path::new("records/ext_deni");
 
@@ -121,6 +104,18 @@ pub fn fetch_ext_debt_holders()->Result<Vec<DebtExt>, PosError> {
         Ok(people_log)
     }else{
         let people_log:Vec<DebtExt>=Vec::default();
+        Ok(people_log)
+    }
+}
+pub fn fetch_int_debt_holders()->Result<Vec<DebtInt>, PosError> {
+    let path = Path::new("records/int_deni");
+
+    if path.exists(){
+        let data = std::fs::read(path)?;
+        let people_log: Vec<DebtInt> = serde_yaml::from_slice(&data)?;
+        Ok(people_log)
+    }else{
+        let people_log:Vec<DebtInt>=Vec::default();
         Ok(people_log)
     }
 }
