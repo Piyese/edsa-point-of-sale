@@ -5,6 +5,7 @@ use std::io;
 pub enum PosError{
     FileIOError(io::Error),
     SerdeYamlError(serde_yaml::Error),
+    GeneralError(String)
 }
 impl From<io::Error> for PosError{
     fn from(error: io::Error)->Self{

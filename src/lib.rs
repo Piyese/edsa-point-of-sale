@@ -1,9 +1,25 @@
-pub mod sale;
+pub mod pipeline;
+use std::{path::Path, fs::{OpenOptions, self}, io::Write};
+use serde::{Serialize, Deserialize};
+use pipeline::{accounts::{TransactionIn, OutTransaction, DebtExt, DebtInt}, errors::PosError, inventory::{ FinishedProd, RawMaterial, PackagedProd, Product}, people::{Person,Employee}};
 
-use std::path::Path;
 
-use sale::{accounts::{TransactionIn, OutTransaction, DebtExt, DebtInt}, errors::PosError, inventory::{DailyYield,FinishedProduct, RawMaterial}, people::{Person,Employee}};
+pub trait LogPartial {
 
+    fn log(&self, path: &Path) where Self: Serialize {
+        let item_log=[self];
+        let item_log=serde_yaml::to_vec(&item_log).unwrap();
+
+        if path.exists(){
+            let mut file=OpenOptions::new().append(true).open(path).expect("cant open file");
+            let item_log=&item_log[4..];
+            file.write_all(&item_log).expect("cant write into..");
+        }else{
+            let mut file=fs::File::create(path).expect("cant open file");
+            file.write_all(&item_log).expect("cant write into..");
+        }
+    }
+}
 
 pub fn fetch_transaction_in_log()->Result<Vec<TransactionIn>, PosError>{
     let path=Path::new("records/in_acc");
@@ -33,18 +49,6 @@ pub fn fetch_transaction_out_log()->Result<Vec<OutTransaction>, PosError>{
     }
 }
 
-pub fn fetch_daily_logs()->Result< Vec<DailyYield>, PosError> {
-    let path = Path::new("records/dailyyield");
-    
-    if path.exists(){
-        let data = std::fs::read(path)?;
-        let daily_log: Vec<DailyYield> = serde_yaml::from_slice(&data)?;
-        Ok(daily_log)
-    }else{
-        let daily_log:Vec<DailyYield>=Vec::default();
-        Ok(daily_log)
-    }
-}
 pub fn fetch_employee_logs()->Result< Vec<Employee>, PosError> {
     let path = Path::new("records/employees");
     
@@ -57,6 +61,7 @@ pub fn fetch_employee_logs()->Result< Vec<Employee>, PosError> {
         Ok(emp_log)
     }
 }
+
 pub fn fetch_people_logs()->Result< Vec<Person>, PosError> {
     let path = Path::new("records/people");
     
@@ -69,31 +74,6 @@ pub fn fetch_people_logs()->Result< Vec<Person>, PosError> {
         Ok(people_log)
     }
 } 
-pub fn fetch_finished_product_log()-> Result<FinishedProduct, PosError> {
-    let path = Path::new("records/finishedproduct");
-    
-    if path.exists(){
-        let data = std::fs::read(path)?;
-        let fd: FinishedProduct = serde_yaml::from_slice(&data)?;
-        Ok(fd)
-    }else{
-        let fd = FinishedProduct::default();
-        Ok(fd)
-    }
-}
-
-pub fn fetch_raw_material_log()->Result<RawMaterial, PosError> {
-    let path = Path::new("records/rawmat"); 
-
-    if path.exists() {
-        let data = std::fs::read(path)?;
-        let rm: RawMaterial = serde_yaml::from_slice(&data)?;
-        Ok(rm)
-    }else {
-        let rm  = RawMaterial::default();
-        Ok(rm)
-    }
-}
 
 pub fn fetch_ext_debt_holders()->Result<Vec<DebtExt>, PosError> {
     let path = Path::new("records/ext_deni");
@@ -107,6 +87,7 @@ pub fn fetch_ext_debt_holders()->Result<Vec<DebtExt>, PosError> {
         Ok(people_log)
     }
 }
+
 pub fn fetch_int_debt_holders()->Result<Vec<DebtInt>, PosError> {
     let path = Path::new("records/int_deni");
 
@@ -119,6 +100,59 @@ pub fn fetch_int_debt_holders()->Result<Vec<DebtInt>, PosError> {
         Ok(people_log)
     }
 }
+
+pub fn fetch_pkg_log()->Result<Vec<PackagedProd>, PosError> {
+    let path = Path::new("records/pkgprod");
+
+    if path.exists(){
+        let data = std::fs::read(path)?;
+        let pkg_log: Vec<PackagedProd> = serde_yaml::from_slice(&data)?;
+        Ok(pkg_log)
+    }else{
+        let pkg_log:Vec<PackagedProd>=Vec::default(); 
+        Ok(pkg_log)
+    }
+}
+
+pub fn fetch_rawmat_log()->Result<Vec<RawMaterial>, PosError> {
+    let path = Path::new("records/rawmat");
+
+    if path.exists(){
+        let data = std::fs::read(path)?;
+        let rawmat: Vec<RawMaterial> = serde_yaml::from_slice(&data)?;
+        Ok(rawmat)
+    }else{
+        let rawmat:Vec<RawMaterial>=Vec::default(); 
+        Ok(rawmat)
+    }
+}
+
+pub fn fetch_finished_prod_log()->Result<Vec<FinishedProd>, PosError> {
+    let path = Path::new("records/finprod");
+
+    if path.exists(){
+        let data = std::fs::read(path)?;
+        let fd: Vec<FinishedProd> = serde_yaml::from_slice(&data)?;
+        Ok(fd)
+    }else{
+        let fd:Vec<FinishedProd>=Vec::default(); 
+        Ok(fd)
+    }
+}
+
+pub fn fetch_product_log()->Result<Vec<Product>, PosError> {
+    let path = Path::new("records/products");
+
+    if path.exists(){
+        let data = std::fs::read(path)?;
+        let prod: Vec<Product> = serde_yaml::from_slice(&data)?;
+        Ok(prod)
+    }else{
+        let prod:Vec<Product>=Vec::default(); 
+        Ok(prod)
+    }
+}
+
 
 
 #[cfg(test)]

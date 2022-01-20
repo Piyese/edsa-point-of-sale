@@ -1,81 +1,80 @@
-// use std::time::SystemTime;
 use std::{path::Path, io::Write};
-use std::fs::{OpenOptions, self};
+
+use crate::{fetch_int_debt_holders, fetch_ext_debt_holders, fetch_pkg_log, fetch_rawmat_log};
+
+use super::{people::Person, inventory::{PackagedProd, RawMaterial}};
+
 use chrono::Local;
-use serde::{Deserialize, Serialize};
-use crate::{fetch_ext_debt_holders, fetch_int_debt_holders};
-
-use super::inventory::{RawMaterial, FinishedProduct};
-use super::{inventory::Product, people::Person};
+use serde::{Serialize, Deserialize};
 
 
-
-#[derive(Debug, Deserialize, Serialize, Clone, PartialEq, PartialOrd, Eq)]
+#[derive(Debug, Clone, Deserialize, Serialize, PartialEq, PartialOrd)]
 pub struct TransactionIn {
     pub time: String,
-    pub buyer: Person,
-    pub items: Vec<Product>,
-    pub total_cost: u32,
+    pub person: Person,
+    pub items: Vec<PackagedProd>,
+    pub total_cost: f32,
     pub bill_settled: bool,
-    pub balance: Option<u32>
+    pub balance: Option<f32>
 }
 
-impl TransactionIn {
-    pub fn new(buyer:Person)-> Self {
-        let item_list:Vec<Product> = Vec::new();
+impl crate::LogPartial for TransactionIn{}
 
+impl TransactionIn {
+    pub fn new(person: Person)-> Self {
         let time = Local::now().format("%d-%m-%Y %H:%M:%S").to_string();
-        let items=item_list;
-        let total_cost=0;
+        let items: Vec<PackagedProd> = Vec::new();
+        let total_cost=0.;
         let bill_settled=false;
         let balance=None;
         Self{
             time,
-            buyer,
+            person,
             items,
             total_cost,
             bill_settled,
             balance,
         }
     }
-    pub fn add_item(&mut self,item: Product){
-        self.total_cost+=item.price*item.quantity;
-        self.balance=Some(self.total_cost);
-        self.items.push(item);
+    pub fn add(&mut self, p: PackagedProd) {
+        let tc = p.cost * p.total as f32;
+        self.total_cost += tc;
+        self.items.push(p);
+        self.balance = Some(self.total_cost);
     }
 
-    pub fn remove_last_added_item(&mut self){
-        let item = self.items.pop().unwrap();
-        self.total_cost-=item.price*item.quantity;
-    }
-
-    pub fn balance_books(&self, fp:  &mut FinishedProduct ) {
-        // subtract the quantity bought from overall available quantity
-        if let Some(p) = self.items.get(0){
-            fp.available_quantity -= p.quantity;
-            fp.log().unwrap();
+    /// subtract the bought packaged products from total packaged products
+    pub fn balance_books(&self) {
+        let mut pkg_list = fetch_pkg_log().unwrap();
+        for item in &self.items {
+            for pkg in pkg_list.iter_mut() {
+                if pkg.pkg_specify == item.pkg_specify {
+                    pkg.total -= item.total;
+                    break;
+                }
+            }
         }
     }
 
-    pub fn settle_bill(&mut self, amount:u32){
+    pub fn settle_bill(&mut self, amount:f32){
         if self.bill_settled{
             println!("nothing more to do.. the bill is fully settled")
         }else{
             if let Some(x)=self.balance{
-                if amount>=x{
+                if amount >= x{
                     self.bill_settled=true;
                     self.balance=None;
                 }else{
                     self.balance=Some(x-amount);
-                    // for the debt tracker
+
+                    // debt tracking
                     let mut list = fetch_ext_debt_holders().unwrap();
-                    dbg!(&list);
                     let mut existence_validator = false;
 
                     for de in list.iter_mut() {
-                        if de.person == self.buyer {
+                        if de.person == self.person {
                             println!(" in pattern1");
-                            de.total_amount += self.balance.unwrap();
+                            de.total_amount += self.balance.unwrap() as u32; // f32 to u32 ***************
                             existence_validator = true;
                             break;
                         }
@@ -83,137 +82,130 @@ impl TransactionIn {
                     if !existence_validator {
                         println!(" in pattern2");
                         let ext = DebtExt {
-                            person: self.buyer.to_owned(),
-                            total_amount: self.balance.unwrap(),
+                            person: self.person.to_owned(),
+                            total_amount: self.balance.unwrap() as u32, // f32 to u32 ***************
                         };
                         list.push(ext);
                     }
-                    // logging
+
+                    // logging the debt record
                     let path = Path::new("records/ext_deni");
             
                     let mut file=std::fs::File::create(path).unwrap();
                     let new_l = serde_yaml::to_vec(&list).unwrap();
                     file.write_all(&new_l).unwrap();
-
                 }
             }
         }
     }
-    pub fn log(self){
-        let path=Path::new("records/in_acc");//change to absolute path
-        let trans_log=[self];
-        let trans_log=serde_yaml::to_vec(&trans_log).unwrap();
-
-        if path.exists(){
-            let mut file=OpenOptions::new().append(true).open(path).expect("cant open file");
-            let trans_log=&trans_log[4..];
-            file.write_all(&trans_log).expect("cant write into..");
-        }else{
-            let mut file=fs::File::create(path).expect("cant open file");
-            file.write_all(&trans_log).expect("cant write into..");
-        }
-    }
 }
 
-#[derive(Debug, Deserialize, Serialize, Clone, PartialEq, Eq, PartialOrd, Ord)]
+#[derive(Debug, Clone, Deserialize, Serialize, PartialEq, PartialOrd)]
 pub struct OutTransaction {
     pub time: String,
     pub person: Person,
-    pub raw_mat: RawMaterial,
-    pub price_per_kg: u32,
-    pub total_cost: u32,
+    pub items: Vec<RawMaterial>,
+    pub total_cost: f32,
     pub bill_settled: bool,
-    pub balance: Option<u32>,
+    pub balance: Option<f32>
 }
 
+impl crate::LogPartial for OutTransaction{}
+
 impl OutTransaction {
-    pub fn new(person: Person, raw_mat: RawMaterial)-> Self {
+    /// Creates a new [`OutTransaction`].
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use edsa_pos::pipeline::accounts::OutTransaction;
+    /// use edsa_pos::pipeline::people::Person;
+    /// 
+    /// let p = Person::new("Holy".to_string(), "0789564132".to_string());
+    /// let ot = OutTransaction::new(p);
+    /// 
+    /// ```
+    pub fn new(person: Person)-> Self {
         let time = Local::now().format("%d-%m-%Y %H:%M:%S").to_string();
-        let total_cost=0;
-        let price_per_kg =0;
+        let items: Vec<RawMaterial> = Vec::new();
+        let total_cost=0.;
         let bill_settled=false;
         let balance=None;
         Self{
             time,
             person,
-            raw_mat,
-            price_per_kg,
+            items,
             total_cost,
             bill_settled,
             balance,
         }
     }
 
-    pub fn update(&mut self, price_per_kg: u32) {
-        self.price_per_kg= price_per_kg;
-        self.total_cost=price_per_kg*self.raw_mat.available_quantity;
-        self.balance = Some(self.total_cost);
+    pub fn add(&mut self, r: RawMaterial) {
+        let tc = r.quantity * r.price_per;
+        self.total_cost = tc;
+        self.items.push(r);
     }
 
-    pub fn settle_bill(&mut self, amount:u32){
-        if self.bill_settled{
-            println!("nothing more to do.. the bill is fully settled")
-        }else{
-            if let Some(x)=self.balance{
-                if amount>=x{
-                    self.bill_settled=true;
-                    self.balance=None;
-                }else{
-                    self.balance=Some(x-amount);
-                    // debt tracking
-                    let mut list = fetch_int_debt_holders().unwrap();
-                    dbg!(&list);
-                    let mut existence_validator = false;
-
-                    for de in list.iter_mut() {
-                        if de.person == self.person {
-                            println!(" in pattern1");
-                            de.total_amount += self.balance.unwrap();
-                            existence_validator = true;
-                            break;
-                        }
-                    }
-                    if !existence_validator {
-                        println!(" in pattern2");
-                        let ext = DebtInt {
-                            person: self.person.to_owned(),
-                            total_amount: self.balance.unwrap(),
-                        };
-                        list.push(ext);
-                    }
-                    // logging
-                    let path = Path::new("records/ext_deni");
-            
-                    let mut file=std::fs::File::create(path).unwrap();
-                    let new_l = serde_yaml::to_vec(&list).unwrap();
-                    file.write_all(&new_l).unwrap();
-
+    /// add the quantity of bought materials to overall quantity
+    pub fn balance_books(&self) {
+        let mut rm_list = fetch_rawmat_log().unwrap();
+        for item in &self.items {
+            for rawmat in rm_list.iter_mut() {
+                if rawmat.name == item.name {
+                    rawmat.quantity += item.quantity;
+                    break;
                 }
             }
         }
     }
 
-    pub fn balance_books(&self, rm: &mut RawMaterial){
-        rm.available_quantity += self.raw_mat.available_quantity;
-        rm.log().unwrap();
-    }
-
-    pub fn log(self){
-        let path=Path::new("records/out_acc");//change to absolute path
-        let trans_log=[self];
-        let trans_log=serde_yaml::to_vec(&trans_log).unwrap();
-
-        if path.exists(){
-            let mut file=OpenOptions::new().append(true).open(path).expect("cant open file");
-            let trans_log=&trans_log[4..];
-            file.write_all(&trans_log).expect("cant write into..");
+    pub fn settle_bill(&mut self, amount:f32){
+        if self.bill_settled{
+            println!("nothing more to do.. the bill is fully settled")
         }else{
-            let mut file=fs::File::create(path).expect("cant open file");
-            file.write_all(&trans_log).expect("cant write into..");
+            if let Some(x)=self.balance{
+                if amount >= x{
+                    self.bill_settled=true;
+                    self.balance=None;
+                }else{
+                    self.balance=Some(x-amount);
+
+                    // debt tracking
+                    let mut list = fetch_int_debt_holders().unwrap();
+                    let mut existence_validator = false;
+
+                    for di in list.iter_mut() {
+                        if di.person == self.person {
+                            println!(" in pattern1");
+                            di.total_amount += self.balance.unwrap() as u32; // f32 to u32 ***************
+                            existence_validator = true;
+                            break;
+                        } 
+                    }
+                    if !existence_validator {
+                        println!(" in pattern2");
+                        let int = DebtInt {
+                            person: self.person.to_owned(),
+                            total_amount: self.balance.unwrap() as u32, // f32 to u32 ***************
+                        };
+                        list.push(int);
+                    }
+
+                    // logging the debt record
+                    let path = Path::new("records/int_deni");
+            
+                    let mut file=std::fs::File::create(path).unwrap();
+                    let new_l = serde_yaml::to_vec(&list).unwrap();
+                    file.write_all(&new_l).unwrap();
+                }
+            }
         }
     }
 }
-#[derive(Debug, Deserialize, Serialize, Clone, PartialEq, Eq, PartialOrd, Ord)]
+
+
+#[derive(Debug, Default, Deserialize, Serialize, Clone, PartialEq, Eq, PartialOrd, Ord)]
 pub struct DebtExt {
     pub person: Person,
     pub total_amount: u32,
@@ -223,7 +215,7 @@ impl DebtExt {
     pub fn settle_debt(&mut self, mut amount: u32, trans_list: &mut Vec<TransactionIn>) {
         if amount > self.total_amount {
             for trans in trans_list.iter_mut() {
-                if !trans.bill_settled && self.person == trans.buyer {
+                if !trans.bill_settled && self.person == trans.person {
                     trans.bill_settled = true;
                     trans.balance = None;
                 }
@@ -233,14 +225,15 @@ impl DebtExt {
             self.total_amount -= amount;
 
             for trans in trans_list.iter_mut() {
-                if !trans.bill_settled && self.person == trans.buyer {
+                if !trans.bill_settled && self.person == trans.person {
                     if let Some(balance)=trans.balance{
-                        if amount > balance {
-                            amount -= balance; // balancing
+                        if amount as f32 > balance {  // f32 to u32 ***************
+                            // balancing
+                            amount -= balance as u32; // u32 to f32 ***************
                             trans.bill_settled = true;
                             trans.balance = None;
                         }else {
-                            trans.balance = Some(balance - amount);
+                            trans.balance = Some(balance - amount as f32);//********
                             break;
                         }
                     }
@@ -272,12 +265,12 @@ impl DebtInt {
             for trans in trans_list.iter_mut() {
                 if !trans.bill_settled && self.person == trans.person {
                     if let Some(balance)=trans.balance{
-                        if amount > balance {
-                            amount -= balance; // balancing
+                        if amount as f32 > balance { // *********
+                            amount -= balance as u32; // balancing / ********
                             trans.bill_settled = true;
                             trans.balance = None;
                         }else {
-                            trans.balance = Some(balance - amount);
+                            trans.balance = Some(balance - amount as f32); // *********
                             break;
                         }
                     }
