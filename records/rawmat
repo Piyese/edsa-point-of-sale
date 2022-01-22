@@ -1,0 +1,10 @@
+---
+- name: maize germ
+  quantity: 60.0
+  price_per: ~
+- name: soya
+  quantity: 200.0
+  price_per: ~
+- name: beans
+  quantity: 101.0
+  price_per: ~

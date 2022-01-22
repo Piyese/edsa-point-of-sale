@@ -1,0 +1,13 @@
+---
+- product:
+    name: Flour
+  pkg_specify: Pembe small
+  quantity: 2.0
+  cost: 112.0
+  total: 105
+- product:
+    name: Kuku Feeds
+  pkg_specify: Chick Mash
+  quantity: 0.5
+  cost: 35.0
+  total: 670

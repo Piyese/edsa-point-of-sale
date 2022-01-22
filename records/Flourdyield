@@ -1,0 +1,15 @@
+---
+- date:
+    year: 2022
+    month: 1
+    day: 21
+  product:
+    name: Flour
+  quantity: 1000.0
+- date:
+    year: 2022
+    month: 1
+    day: 22
+  product:
+    name: Flour
+  quantity: 3000.0

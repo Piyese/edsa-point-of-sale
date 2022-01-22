@@ -1,0 +1,21 @@
+---
+- time: "20-01-2022 18:07:51"
+  person:
+    name: Rayon
+    tel: "3823344242"
+  items:
+    - product:
+        name: Flour
+      pkg_specify: Pembe small
+      quantity: 2.0
+      cost: 65.0
+      total: 13
+    - product:
+        name: Kuku Feeds
+      pkg_specify: Chick Mash
+      quantity: 0.5
+      cost: 65.0
+      total: 16
+  total_cost: 1885.0
+  bill_settled: false
+  balance: 1885.0

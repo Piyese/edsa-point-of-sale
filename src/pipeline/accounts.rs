@@ -1,9 +1,6 @@
-use std::{path::Path, io::Write};
-
-use crate::{fetch_int_debt_holders, fetch_ext_debt_holders, fetch_pkg_log, fetch_rawmat_log};
-
-use super::{people::Person, inventory::{PackagedProd, RawMaterial}};
-
+use std::{path::Path, io::Write, fs};
+use crate::{fetch_logs, PathOption};
+use super::{people::Person, inventory::{PackagedProd, RawMaterial}, errors::PosError};
 use chrono::Local;
 use serde::{Serialize, Deserialize};
 
@@ -44,8 +41,9 @@ impl TransactionIn {
     }
 
     /// subtract the bought packaged products from total packaged products
+    /// and log the new list 
     pub fn balance_books(&self) {
-        let mut pkg_list = fetch_pkg_log().unwrap();
+        let mut pkg_list = fetch_logs::<PackagedProd>(PathOption::PkgProd).unwrap();
         for item in &self.items {
             for pkg in pkg_list.iter_mut() {
                 if pkg.pkg_specify == item.pkg_specify {
@@ -54,6 +52,13 @@ impl TransactionIn {
                 }
             }
         }
+        // log
+        let path = Path::new("records/pkgprod");
+
+        let mut file=std::fs::File::create(path).unwrap();
+        let new_l = serde_yaml::to_vec(&pkg_list).unwrap();
+        file.write_all(&new_l).unwrap();
+
     }
 
     pub fn settle_bill(&mut self, amount:f32){
@@ -68,7 +73,7 @@ impl TransactionIn {
                     self.balance=Some(x-amount);
 
                     // debt tracking
-                    let mut list = fetch_ext_debt_holders().unwrap();
+                    let mut list = fetch_logs::<Debtor>(PathOption::PkgProd).unwrap();
                     let mut existence_validator = false;
 
                     for de in list.iter_mut() {
@@ -81,7 +86,7 @@ impl TransactionIn {
                     }
                     if !existence_validator {
                         println!(" in pattern2");
-                        let ext = DebtExt {
+                        let ext = Debtor {
                             person: self.person.to_owned(),
                             total_amount: self.balance.unwrap() as u32, // f32 to u32 ***************
                         };
@@ -89,7 +94,7 @@ impl TransactionIn {
                     }
 
                     // logging the debt record
-                    let path = Path::new("records/ext_deni");
+                    let path = Path::new("records/debtors");
             
                     let mut file=std::fs::File::create(path).unwrap();
                     let new_l = serde_yaml::to_vec(&list).unwrap();
@@ -142,23 +147,25 @@ impl OutTransaction {
     }
 
     pub fn add(&mut self, r: RawMaterial) {
-        let tc = r.quantity * r.price_per;
-        self.total_cost = tc;
+        let tc = r.quantity * r.price_per.unwrap(); // should use an 'if let'
+        self.total_cost += tc;
+        self.balance = Some(self.total_cost);
         self.items.push(r);
     }
 
     /// add the quantity of bought materials to overall quantity
-    pub fn balance_books(&self) {
-        let mut rm_list = fetch_rawmat_log().unwrap();
-        for item in &self.items {
-            for rawmat in rm_list.iter_mut() {
-                if rawmat.name == item.name {
-                    rawmat.quantity += item.quantity;
-                    break;
-                }
-            }
-        }
-    }
+    // pub fn balance_books(&self)->Result<(), PosError> {
+    //     let mut rm_list = fetch_logs::<RawMaterial>(PathOption::RawMat).unwrap();
+    //     for item in &self.items {
+    //         for rawmat in rm_list.iter_mut() {
+    //             if rawmat.name == item.name {
+    //                 rawmat.quantity += item.quantity;
+    //                 break;
+    //             }
+    //         }
+    //     }
+    //     Ok(())
+    // }
 
     pub fn settle_bill(&mut self, amount:f32){
         if self.bill_settled{
@@ -172,7 +179,7 @@ impl OutTransaction {
                     self.balance=Some(x-amount);
 
                     // debt tracking
-                    let mut list = fetch_int_debt_holders().unwrap();
+                    let mut list = fetch_logs::<Creditor>(PathOption::Creditor).unwrap();
                     let mut existence_validator = false;
 
                     for di in list.iter_mut() {
@@ -185,7 +192,7 @@ impl OutTransaction {
                     }
                     if !existence_validator {
                         println!(" in pattern2");
-                        let int = DebtInt {
+                        let int = Creditor {
                             person: self.person.to_owned(),
                             total_amount: self.balance.unwrap() as u32, // f32 to u32 ***************
                         };
@@ -193,7 +200,7 @@ impl OutTransaction {
                     }
 
                     // logging the debt record
-                    let path = Path::new("records/int_deni");
+                    let path = Path::new("records/creditors");
             
                     let mut file=std::fs::File::create(path).unwrap();
                     let new_l = serde_yaml::to_vec(&list).unwrap();
@@ -206,12 +213,14 @@ impl OutTransaction {
 
 
 #[derive(Debug, Default, Deserialize, Serialize, Clone, PartialEq, Eq, PartialOrd, Ord)]
-pub struct DebtExt {
+pub struct Debtor {
     pub person: Person,
     pub total_amount: u32,
 }
 
-impl DebtExt {
+impl crate::LogPartial for Debtor{}
+
+impl Debtor {
     pub fn settle_debt(&mut self, mut amount: u32, trans_list: &mut Vec<TransactionIn>) {
         if amount > self.total_amount {
             for trans in trans_list.iter_mut() {
@@ -244,12 +253,14 @@ impl DebtExt {
 }
 
 #[derive(Debug, Deserialize, Serialize, Clone, PartialEq, Eq, PartialOrd, Ord)]
-pub struct DebtInt {
+pub struct Creditor {
     pub person: Person,
     pub total_amount: u32,
 }
 
-impl DebtInt {
+impl crate::LogPartial for Creditor{}
+
+impl Creditor {
     pub fn settle_debt(&mut self, mut amount: u32, trans_list: &mut Vec<OutTransaction>) {
         if amount > self.total_amount {
             for trans in trans_list.iter_mut() {

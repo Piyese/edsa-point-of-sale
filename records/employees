@@ -1,0 +1,13 @@
+---
+- name: Rapper
+  sex: Male
+  active: true
+  tel: "0101019181"
+- name: Femi Uno
+  sex: Female
+  active: true
+  tel: "010654181"
+- name: Femi two
+  sex: Female
+  active: true
+  tel: "010654181"

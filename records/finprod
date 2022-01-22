@@ -1,0 +1,7 @@
+---
+- product:
+    name: Flour
+  quantity: 1500.0
+- product:
+    name: Kuku Feeds
+  quantity: 1740.0

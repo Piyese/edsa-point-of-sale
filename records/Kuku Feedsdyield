@@ -1,0 +1,8 @@
+---
+- date:
+    year: 2022
+    month: 1
+    day: 22
+  product:
+    name: Kuku Feeds
+  quantity: 1000.0

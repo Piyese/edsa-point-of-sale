@@ -1,0 +1,127 @@
+---
+- time: "21-01-2022 18:20:18"
+  person:
+    name: Sawk
+    tel: "038270028"
+  items:
+    - name: maize germ
+      quantity: 10.0
+      price_per: 120.0
+  total_cost: 1200.0
+  bill_settled: false
+  balance: 1200.0
+- time: "21-01-2022 18:43:09"
+  person:
+    name: ivy
+    tel: "3353344242"
+  items:
+    - name: maize germ
+      quantity: 10.0
+      price_per: 120.0
+  total_cost: 1200.0
+  bill_settled: false
+  balance: 1200.0
+- time: "21-01-2022 18:45:00"
+  person:
+    name: ivy
+    tel: "3353344242"
+  items:
+    - name: maize germ
+      quantity: 10.0
+      price_per: 120.0
+  total_cost: 1200.0
+  bill_settled: false
+  balance: 1200.0
+- time: "21-01-2022 18:50:37"
+  person:
+    name: ivy
+    tel: "3353344242"
+  items:
+    - name: maize germ
+      quantity: 10.0
+      price_per: 120.0
+    - name: soya
+      quantity: 100.0
+      price_per: 12.0
+  total_cost: 2400.0
+  bill_settled: false
+  balance: 2400.0
+- time: "21-01-2022 18:51:29"
+  person:
+    name: ivy
+    tel: "3353344242"
+  items:
+    - name: maize germ
+      quantity: 10.0
+      price_per: 120.0
+    - name: soya
+      quantity: 100.0
+      price_per: 12.0
+  total_cost: 2400.0
+  bill_settled: false
+  balance: 2400.0
+- time: "21-01-2022 18:51:50"
+  person:
+    name: ivy
+    tel: "3353344242"
+  items:
+    - name: maize germ
+      quantity: 10.0
+      price_per: 120.0
+    - name: soya
+      quantity: 100.0
+      price_per: 12.0
+  total_cost: 2400.0
+  bill_settled: false
+  balance: 2400.0
+- time: "22-01-2022 13:34:23"
+  person:
+    name: ivy
+    tel: "3353344242"
+  items:
+    - name: maize germ
+      quantity: 10.0
+      price_per: 80.0
+    - name: soya
+      quantity: 100.0
+      price_per: 120.0
+    - name: beans
+      quantity: 50.5
+      price_per: 45.0
+  total_cost: 15072.5
+  bill_settled: false
+  balance: 14072.5
+- time: "22-01-2022 13:40:05"
+  person:
+    name: ivy
+    tel: "3353344242"
+  items:
+    - name: maize germ
+      quantity: 10.0
+      price_per: 80.0
+    - name: soya
+      quantity: 150.0
+      price_per: 70.0
+    - name: beans
+      quantity: 50.5
+      price_per: 45.0
+  total_cost: 13572.5
+  bill_settled: false
+  balance: 12572.5
+- time: "22-01-2022 13:40:33"
+  person:
+    name: ivy
+    tel: "3353344242"
+  items:
+    - name: maize germ
+      quantity: 10.0
+      price_per: 80.0
+    - name: soya
+      quantity: 150.0
+      price_per: 70.0
+    - name: beans
+      quantity: 50.5
+      price_per: 45.0
+  total_cost: 13572.5
+  bill_settled: false
+  balance: 12572.5
