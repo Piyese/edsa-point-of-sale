@@ -1,7 +1,7 @@
 pub mod pipeline;
 use std::{path::Path, fs::{OpenOptions, self}, io::Write};
-use serde::{Serialize, Deserialize, de};
-use pipeline::{accounts::{TransactionIn, OutTransaction, Debtor, Creditor}, errors::PosError, inventory::{ FinishedProd, RawMaterial, PackagedProd, Product, DailyYield}, people::{Person,Employee}};
+use serde::{Serialize, de};
+use pipeline::{inventory::DailyYield, errors::PosError};
 
 
 pub trait LogPartial {

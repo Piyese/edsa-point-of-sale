@@ -1,6 +1,6 @@
-use std::{path::Path, io::Write, fs};
+use std::{path::Path, io::Write};
 use crate::{fetch_logs, PathOption};
-use super::{people::Person, inventory::{PackagedProd, RawMaterial}, errors::PosError};
+use super::{people::Person, inventory::{PackagedProd, RawMaterial}};
 use chrono::Local;
 use serde::{Serialize, Deserialize};
 
