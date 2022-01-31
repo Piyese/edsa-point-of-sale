@@ -242,7 +242,7 @@ impl PackagedProd {
     /// let pkg = PackagedProd::new(product);
     /// 
     /// // then add the price its being offered at per kg
-    /// material.price(65)
+    /// pkg.price(65)
     /// 
     /// // then log the instance.
     /// // on the frontend this should added to the local pkgprod list

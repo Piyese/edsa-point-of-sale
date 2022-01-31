@@ -19,7 +19,7 @@ impl Person {
     /// ```
     /// use edsa_pos::sale::people::Person;
     ///
-    /// let result = Person::new(role, name, tel);
+    /// let result = Person::new(name, tel);
     /// 
     /// ```
     pub fn new(name: String, tel: String)->Self {
