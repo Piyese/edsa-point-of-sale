@@ -81,6 +81,7 @@ pub fn fetch_daily_logs(path: &Path)-> Result<Vec<DailyYield>, PosError>{
         let item_log: Vec<DailyYield> = serde_yaml::from_slice(&data)?;
         Ok(item_log)
     }else{
+        println!(" does not exist");
         let item_log:Vec<DailyYield>=Vec::new();
         Ok(item_log)
     }

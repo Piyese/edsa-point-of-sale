@@ -108,7 +108,7 @@ impl Production {
 
         Self {date, product, raw_mat}
     }
-    pub fn add_rawmat(&mut self, r: RawMaterial) {
+    pub fn add_rawmat(&mut self, r: &RawMaterial) {
         self.raw_mat.push(r.clone());
 
         // subtract from raw material in stock
@@ -289,6 +289,7 @@ impl PackagedProd {
     }
 
     pub fn add_packs(&mut self, amt: u32) {
+        
         self.total += amt;
     } 
 }
