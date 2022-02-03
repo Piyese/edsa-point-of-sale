@@ -73,7 +73,7 @@ impl TransactionIn {
                     self.balance=Some(x-amount);
 
                     // debt tracking
-                    let mut list = fetch_logs::<Debtor>(PathOption::PkgProd).unwrap();
+                    let mut list = fetch_logs::<Debtor>(PathOption::Debtors).unwrap();
                     let mut existence_validator = false;
 
                     for de in list.iter_mut() {
@@ -154,18 +154,17 @@ impl OutTransaction {
     }
 
     /// add the quantity of bought materials to overall quantity
-    // pub fn balance_books(&self)->Result<(), PosError> {
-    //     let mut rm_list = fetch_logs::<RawMaterial>(PathOption::RawMat).unwrap();
-    //     for item in &self.items {
-    //         for rawmat in rm_list.iter_mut() {
-    //             if rawmat.name == item.name {
-    //                 rawmat.quantity += item.quantity;
-    //                 break;
-    //             }
-    //         }
-    //     }
-    //     Ok(())
-    // }
+    pub fn balance_books(&self) {
+        let mut rm_list = fetch_logs::<RawMaterial>(PathOption::RawMat).unwrap();
+        for item in &self.items {
+            for rawmat in rm_list.iter_mut() {
+                if rawmat.name == item.name {
+                    rawmat.quantity += item.quantity;
+                    break;
+                }
+            }
+        }
+    }
 
     pub fn settle_bill(&mut self, amount:f32){
         if self.bill_settled{

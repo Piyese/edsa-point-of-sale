@@ -263,14 +263,15 @@ impl PackagedProd {
     /// the big idea here is that the buyer gets an already cobstructed PackagedProd,
     /// with set price and quantity and name,
     /// only the total is set to zero so as the buyer can add whatever no. to her cart
-    pub fn sell_pkg (name: String)->Option<Self>{
+    pub fn sell_pkg (name: String)->Option<(Self, u32)>{
         let pkg_list = fetch_logs::<PackagedProd>(PathOption::PkgProd).unwrap();
         for (i, pkg) in pkg_list.iter().enumerate() {
             if pkg.pkg_specify == name {
                 let mut pkg_cln = pkg_list[i].clone();
                 // change the total back to zero
+                let number = pkg_cln.total;
                 pkg_cln.total = 0;
-                return Some(pkg_cln);
+                return Some((pkg_cln, number));
             }
         }
         None
@@ -289,7 +290,6 @@ impl PackagedProd {
     }
 
     pub fn add_packs(&mut self, amt: u32) {
-        
         self.total += amt;
     } 
 }
