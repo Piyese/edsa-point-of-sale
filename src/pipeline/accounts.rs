@@ -1,4 +1,4 @@
-use std::{path::Path, io::Write};
+use std::{path::Path, io::Write, fs};
 use crate::{fetch_logs, PathOption};
 use super::{people::Person, inventory::{PackagedProd, RawMaterial}};
 use chrono::Local;
@@ -164,6 +164,11 @@ impl OutTransaction {
                 }
             }
         }
+        // log the raw material
+        let path = Path::new("records/rawmat");
+        let item_log=serde_yaml::to_vec(&rm_list).unwrap();
+        let mut file=fs::File::create(path).expect("cant open file");
+        file.write_all(&item_log).expect("cant write into..");
     }
 
     pub fn settle_bill(&mut self, amount:f32){
