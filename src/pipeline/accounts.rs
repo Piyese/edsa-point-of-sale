@@ -253,6 +253,12 @@ impl Debtor {
                 }
             }
         }
+        // log
+        let path_a = Path::new("records/in_acc");
+        let item_log=trans_list.to_owned();
+        let item_log=serde_yaml::to_vec(&item_log).unwrap();
+        let mut file=fs::File::create(path_a).expect("cant open file");
+        file.write_all(&item_log).expect("cant write into..");
     }
 }
 
@@ -292,5 +298,10 @@ impl Creditor {
                 }
             }
         }
+        let path_a = Path::new("records/out_acc");
+        let item_log=trans_list.to_owned();
+        let item_log=serde_yaml::to_vec(&item_log).unwrap();
+        let mut file=fs::File::create(path_a).expect("cant open file");
+        file.write_all(&item_log).expect("cant write into..");
     }
 }

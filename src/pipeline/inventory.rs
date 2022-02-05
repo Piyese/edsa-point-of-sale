@@ -45,6 +45,19 @@ impl RawMaterial {
         self.price_per = Some(amt as f32);
     }
 
+    pub fn sell_rm (name: String)->Option<(Self, f32)>{
+        let rm_list = fetch_logs::<RawMaterial>(PathOption::RawMat).unwrap();
+        for (i, rm) in rm_list.iter().enumerate() {
+            if rm.name == name {
+                let mut rm_cln = rm_list[i].clone();
+                // change the total back to zero
+                let number = rm_cln.quantity;
+                rm_cln.quantity = 0.0;
+                return Some((rm_cln, number));
+            }
+        }
+        None
+    }
                 
     pub fn local_log(&self)->Result<(), PosError> {
         let mut rm_list = fetch_logs::<RawMaterial>(PathOption::RawMat).unwrap();
