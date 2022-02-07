@@ -1,19 +1,25 @@
 use std::{time::{SystemTime, UNIX_EPOCH}, path::Path, io::Write, fs};
 use serde::{Deserialize ,Serialize};
 
-use crate::{fetch_logs, PathOption, fetch_daily_logs};
+use crate::{fetch_logs, PathOption, fetch_daily_logs, LogPartial};
 
 use super::{custom_date::Date, errors::PosError};
 
 
 
-#[derive(Debug, Deserialize, Serialize, Clone, PartialEq, PartialOrd)]
+#[derive(Debug, Deserialize, Serialize, Clone, PartialOrd)]
 pub struct RawMaterial {
     pub name: String,
     pub quantity: f32,
     // materials in store will have this as None
     // when construting an instance for transaction purposes, then it has to be Some(thing)
     pub price_per: Option<f32>,
+}
+
+impl PartialEq for RawMaterial {
+    fn eq(&self, other: &Self) -> bool {
+        self.name == other.name
+    }
 }
 
 impl crate::LogPartial for RawMaterial {}
@@ -140,6 +146,41 @@ impl Production {
         let mut file=std::fs::File::create(path).unwrap();
         let new_l = serde_yaml::to_vec(&rm_list).unwrap();
         file.write_all(&new_l).unwrap();
+
+    }
+    pub fn finish(self) {
+        // fetch production logs
+        let mut prod_list = fetch_logs::<Production>(PathOption::Production).unwrap();
+        let path = Path::new("records/production");
+
+        let length = prod_list.len();
+        if prod_list.is_empty() {
+            // log
+            self.log(path);
+        }else {
+            if self.date == prod_list[length-1].date && self.product == prod_list[length-1].product {
+                for item in &self.raw_mat {
+                    if !prod_list[length-1].raw_mat.contains(item) {
+
+                        prod_list[length - 1].raw_mat.push(item.to_owned());
+                    }else {
+                        for rm in prod_list[length - 1].raw_mat.iter_mut() {
+                            if item.name == rm.name {
+                                rm.quantity += item.quantity;
+                                break;
+                            }
+                        }
+                    }
+                    // log
+                    let dlu8 = serde_yaml::to_vec(&prod_list).unwrap();
+                    let mut file=std::fs::File::create(path).unwrap();
+                    file.write_all(&dlu8).unwrap();
+                }
+            }else {
+                // log
+                self.log(path);
+            }
+        }
 
     }
 }

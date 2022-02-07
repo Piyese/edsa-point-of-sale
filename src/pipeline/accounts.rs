@@ -4,6 +4,8 @@ use super::{people::Person, inventory::{PackagedProd, RawMaterial}};
 use chrono::Local;
 use serde::{Serialize, Deserialize};
 
+pub trait Trans {}
+pub trait Owe {}
 
 #[derive(Debug, Clone, Deserialize, Serialize, PartialEq, PartialOrd)]
 pub struct TransactionIn {
@@ -16,6 +18,7 @@ pub struct TransactionIn {
 }
 
 impl crate::LogPartial for TransactionIn{}
+impl Trans for TransactionIn{}
 
 impl TransactionIn {
     pub fn new(person: Person)-> Self {
@@ -115,6 +118,7 @@ pub struct OutTransaction {
     pub balance: Option<f32>
 }
 
+impl Trans for OutTransaction{}
 impl crate::LogPartial for OutTransaction{}
 
 impl OutTransaction {
@@ -222,7 +226,9 @@ pub struct Debtor {
     pub total_amount: u32,
 }
 
+
 impl crate::LogPartial for Debtor{}
+impl Owe for Debtor{}
 
 impl Debtor {
     pub fn settle_debt(&mut self, mut amount: u32, trans_list: &mut Vec<TransactionIn>) {
@@ -269,6 +275,7 @@ pub struct Creditor {
 }
 
 impl crate::LogPartial for Creditor{}
+impl Owe for Creditor{}
 
 impl Creditor {
     pub fn settle_debt(&mut self, mut amount: u32, trans_list: &mut Vec<OutTransaction>) {

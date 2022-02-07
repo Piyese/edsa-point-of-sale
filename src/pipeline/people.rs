@@ -1,6 +1,8 @@
 
 use serde::{Deserialize, Serialize};
 
+use super::accounts::Owe;
+
 
 
 #[derive(Debug, Default, Clone, Deserialize, Serialize, PartialEq, Eq, PartialOrd, Ord)]
@@ -8,7 +10,7 @@ pub struct Person {
     pub name: String,
     pub tel: String,
 }
-
+impl Owe for Person{}
 impl crate::LogPartial for Person{}
 
 impl Person {
